@@ -3,28 +3,10 @@ import azure.functions as func
 
 app = func.FunctionApp()
 
-@app.timer_trigger(schedule="0 */3 * * * *", arg_name="myTimer", run_on_startup=False,
-              use_monitor=False) 
-def timer_trigger_1(myTimer: func.TimerRequest) -> None:
-    if myTimer.past_due:
-        logging.info('The timer is past due!')
+from triggers.extract_chamado import app as chamado
+from triggers.extract_csat import app as extract_csat
+from triggers.extract_sla import app as extract_sla
 
-    logging.info('TIMER_TRIGGER_1 running')
-
-@app.timer_trigger(schedule="0 */2 * * * *", arg_name="myTimer", run_on_startup=False,
-              use_monitor=False) 
-def timer_trigger_2(myTimer: func.TimerRequest) -> None:
-    
-    if myTimer.past_due:
-        logging.info('The timer is past due!')
-
-    logging.info('TIMER_TRIGGER_2 running') 
-
-@app.timer_trigger(schedule="0 */6 * * * *", arg_name="myTimer", run_on_startup=False,
-              use_monitor=False) 
-def timer_trigger_gian(myTimer: func.TimerRequest) -> None:
-    
-    if myTimer.past_due:
-        logging.info('The timer is past due!')
-
-    logging.info('Python timer trigger function executed GIAN.')
+app.register_functions(chamado)
+app.register_functions(extract_csat)
+app.register_functions(extract_sla)
