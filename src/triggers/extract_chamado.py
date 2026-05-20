@@ -1,6 +1,7 @@
 import logging
 import os
 import azure.functions as func
+import pyodbc
 
 app = func.Blueprint()
 
