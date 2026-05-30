@@ -2,47 +2,41 @@ import logging
 import azure.functions as func
 import os
 import pyodbc
+import database_connects
 
 app = func.Blueprint()
 
-@app.timer_trigger(schedule="0 */5 * * * *", arg_name="myTimer", run_on_startup=False,
-              use_monitor=False) 
+@app.timer_trigger(schedule="0 0 12 * * *", arg_name="myTimer", run_on_startup=False,
+                   use_monitor=False)
 def extract_csat(myTimer: func.TimerRequest) -> None:
-    sql_server = os.getenv("SQL_SERVER_SOURCE")
-    sql_database = os.getenv("SQL_DATABASE_SOURCE")
-    sql_user = os.getenv("SQL_USER_SOURCE")
-    sql_pass = os.getenv("SQL_PASSWORD_SOURCE")
+    logging.info("extract_csat: iniciando.")
 
-    logging.info(f'servidor={sql_server}, banco de dados={sql_database}, usuario={sql_user}, senha={sql_pass} - Gian')
-    
-    # Configura a string de conexão para o banco de dados SQL Server
-    conn_str = (
-        "DRIVER={ODBC Driver 18 for SQL Server};"
-        f"SERVER={sql_server};"
-        f"DATABASE={sql_database};"
-        f"UID={sql_user};"
-        f"PWD={sql_pass};"
-        "Encrypt=yes;"
-        "TrustServerCertificate=no;"
-        "Connection Timeout=30;"
-    )
-    
+    SELECT_SQL = "SELECT Id, Column1, Column2 FROM itsm.csat"
+
+    UPSERT_SQL = """
+        MERGE corptech.csat AS tgt
+        USING (VALUES (?, ?, ?)) AS src (Id, Column1, Column2)
+        ON tgt.Id = src.Id
+        WHEN MATCHED THEN
+            UPDATE SET Column1 = src.Column1, Column2 = src.Column2
+        WHEN NOT MATCHED THEN
+            INSERT (Id, Column1, Column2) VALUES (src.Id, src.Column1, src.Column2);
+    """
+
     try:
-        # Estabelece a conexão com o banco de dados usando pyodbc
-        with pyodbc.connect(conn_str) as conn:
-            # Cria um cursor para executar a consulta   
-            cursor = conn.cursor()
-            
-            query = "select TOP 10 * from itsm.csat"
+        with database_connects.get_source_connection() as src_conn:
+            rows = src_conn.cursor().execute(SELECT_SQL).fetchall()
 
-            # Executa a consulta SQL
-            cursor.execute(query)
+        logging.info(f"extract_csat: {len(rows)} linha(s) lida(s) da origem.")
 
-            # Busca todos os resultados da consulta
-            rows = cursor.fetchall()
+        with database_connects.get_target_connection() as dst_conn:
+            cursor = dst_conn.cursor()
+            cursor.fast_executemany = True
+            cursor.executemany(UPSERT_SQL, rows)
+            dst_conn.commit()
 
-            logging.info(rows)           
+        logging.info("extract_csat: upsert concluído.")
 
     except Exception as e:
-        logging.error(f"Erro ao ler itsm.csat: {str(e)}")
+        logging.error(f"extract_csat: erro – {e}")
         raise
