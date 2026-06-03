@@ -13,13 +13,13 @@ def extract_csat(myTimer: func.TimerRequest) -> None:
     SELECT_SQL = "SELECT Id, Column1, Column2 FROM itsm.csat"
 
     UPSERT_SQL = """
-        MERGE corptech.csat AS tgt
-        USING (VALUES (?, ?, ?)) AS src (Id, Column1, Column2)
-        ON tgt.Id = src.Id
-        WHEN MATCHED THEN
-            UPDATE SET Column1 = src.Column1, Column2 = src.Column2
-        WHEN NOT MATCHED THEN
-            INSERT (Id, Column1, Column2) VALUES (src.Id, src.Column1, src.Column2);
+       INSERT INTO corptech.csat (Id, Column1, Column2)
+SELECT ?, ?, ?
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM corptech.csat
+    WHERE Id = ?
+);
     """
     
     conn_source_str = (
