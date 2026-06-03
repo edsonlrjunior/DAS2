@@ -8,41 +8,42 @@ app = func.Blueprint()
 @app.timer_trigger(schedule="0 0 12 * * *", arg_name="myTimer", run_on_startup=False,
                    use_monitor=False)
 def extract_csat(myTimer: func.TimerRequest) -> None:
-    logging.info("extract_csat: iniciando.")
-
-    SELECT_SQL = "SELECT Id, Column1, Column2 FROM itsm.csat"
-
-    UPSERT_SQL = """
-       INSERT INTO corptech.csat (Id, Column1, Column2)
-         VALUES (?, ?, ?)
-    """
-    
-    conn_source_str = (
-        "DRIVER={ODBC Driver 18 for SQL Server};"
-        f"SERVER={os.getenv('SQL_SERVER_SOURCE')};"
-        f"DATABASE={os.getenv('SQL_DATABASE_SOURCE')};"
-        f"UID={os.getenv('SQL_USER_SOURCE')};"
-        f"PWD={os.getenv('SQL_PASSWORD_SOURCE')};"
-        "Encrypt=yes;"
-        "TrustServerCertificate=no;"
-        "Connection Timeout=30;"
-    )
-    
-    conn_target_str = (
-        "DRIVER={ODBC Driver 18 for SQL Server};"
-        f"SERVER={os.getenv('SQL_SERVER_TARGET')};"
-        f"DATABASE={os.getenv('SQL_DATABASE_TARGET')};"
-        f"UID={os.getenv('SQL_USER_TARGET')};"
-        f"PWD={os.getenv('SQL_PASSWORD_TARGET')};"
-        "Encrypt=yes;"
-        "TrustServerCertificate=no;"
-        "Connection Timeout=30;"
-    )
-    
-    conn_source = pyodbc.connect(conn_source_str)
-    conn_target = pyodbc.connect(conn_target_str)
-
     try:
+        logging.info("extract_csat: iniciando.")
+
+        SELECT_SQL = "SELECT Id, Column1, Column2 FROM itsm.csat"
+
+        UPSERT_SQL = """
+        INSERT INTO corptech.csat (Id, Column1, Column2)
+            VALUES (?, ?, ?)
+        """
+        
+        conn_source_str = (
+            "DRIVER={ODBC Driver 18 for SQL Server};"
+            f"SERVER={os.getenv('SQL_SERVER_SOURCE')};"
+            f"DATABASE={os.getenv('SQL_DATABASE_SOURCE')};"
+            f"UID={os.getenv('SQL_USER_SOURCE')};"
+            f"PWD={os.getenv('SQL_PASSWORD_SOURCE')};"
+            "Encrypt=yes;"
+            "TrustServerCertificate=no;"
+            "Connection Timeout=30;"
+        )
+        
+        conn_target_str = (
+            "DRIVER={ODBC Driver 18 for SQL Server};"
+            f"SERVER={os.getenv('SQL_SERVER_TARGET')};"
+            f"DATABASE={os.getenv('SQL_DATABASE_TARGET')};"
+            f"UID={os.getenv('SQL_USER_TARGET')};"
+            f"PWD={os.getenv('SQL_PASSWORD_TARGET')};"
+            "Encrypt=yes;"
+            "TrustServerCertificate=no;"
+            "Connection Timeout=30;"
+        )
+        
+        conn_source = pyodbc.connect(conn_source_str)
+        conn_target = pyodbc.connect(conn_target_str)
+
+    
         with conn_source.cursor() as src_cursor:
             rows = src_cursor.execute(SELECT_SQL).fetchall()
 
