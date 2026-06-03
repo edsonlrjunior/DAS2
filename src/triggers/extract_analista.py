@@ -18,7 +18,7 @@ def extract_analista(myTimer: func.TimerRequest) -> None:
             a.nm_analista,
             a.ds_email,
             a.ds_nivel,
-            f.cd_fila   AS cd_fila_atual,   -- natural key used for FK resolution
+            f.cd_fila   AS cd_fila_atual,
             a.fl_ativo,
             a.dt_inclusao,
             a.dt_atualizacao,

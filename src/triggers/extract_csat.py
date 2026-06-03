@@ -2,7 +2,6 @@ import logging
 import azure.functions as func
 import os
 import pyodbc
-import database_connects
 
 app = func.Blueprint()
 
@@ -22,18 +21,42 @@ def extract_csat(myTimer: func.TimerRequest) -> None:
         WHEN NOT MATCHED THEN
             INSERT (Id, Column1, Column2) VALUES (src.Id, src.Column1, src.Column2);
     """
+    
+    conn_source_str = (
+        "DRIVER={ODBC Driver 18 for SQL Server};"
+        f"SERVER={os.getenv('SQL_SERVER_SOURCE')};"
+        f"DATABASE={os.getenv('SQL_DATABASE_SOURCE')};"
+        f"UID={os.getenv('SQL_USER_SOURCE')};"
+        f"PWD={os.getenv('SQL_PASSWORD_SOURCE')};"
+        "Encrypt=yes;"
+        "TrustServerCertificate=no;"
+        "Connection Timeout=30;"
+    )
+    
+    conn_target_str = (
+        "DRIVER={ODBC Driver 18 for SQL Server};"
+        f"SERVER={os.getenv('SQL_SERVER_TARGET')};"
+        f"DATABASE={os.getenv('SQL_DATABASE_TARGET')};"
+        f"UID={os.getenv('SQL_USER_TARGET')};"
+        f"PWD={os.getenv('SQL_PASSWORD_TARGET')};"
+        "Encrypt=yes;"
+        "TrustServerCertificate=no;"
+        "Connection Timeout=30;"
+    )
+    
+    conn_source = pyodbc.connect(conn_source_str)
+    conn_target = pyodbc.connect(conn_target_str)
 
     try:
-        with database_connects.get_source_connection() as src_conn:
-            rows = src_conn.cursor().execute(SELECT_SQL).fetchall()
+        with conn_source.cursor() as src_cursor:
+            rows = src_cursor.execute(SELECT_SQL).fetchall()
 
         logging.info(f"extract_csat: {len(rows)} linha(s) lida(s) da origem.")
 
-        with database_connects.get_target_connection() as dst_conn:
-            cursor = dst_conn.cursor()
-            cursor.fast_executemany = True
-            cursor.executemany(UPSERT_SQL, rows)
-            dst_conn.commit()
+        with conn_target.cursor() as dst_cursor:
+            dst_cursor.fast_executemany = True
+            dst_cursor.executemany(UPSERT_SQL, rows)
+            conn_target.commit()
 
         logging.info("extract_csat: upsert concluído.")
 
