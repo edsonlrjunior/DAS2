@@ -14,12 +14,7 @@ def extract_csat(myTimer: func.TimerRequest) -> None:
 
     UPSERT_SQL = """
        INSERT INTO corptech.csat (Id, Column1, Column2)
-SELECT ?, ?, ?
-WHERE NOT EXISTS (
-    SELECT 1
-    FROM corptech.csat
-    WHERE Id = ?
-);
+         VALUES (?, ?, ?)
     """
     
     conn_source_str = (
