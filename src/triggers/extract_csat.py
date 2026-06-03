@@ -23,15 +23,14 @@ def extract_csat(myTimer: func.TimerRequest) -> None:
     """
 
     try:
-        with get_source_connection() as src_conn:
-            rows = src_conn.cursor().execute(SELECT_SQL).fetchall()
+        with get_source_connection().cursor() as src_conn:
+            rows = src_conn.execute(SELECT_SQL).fetchall()
 
         logging.info(f"extract_csat: {len(rows)} linha(s) lida(s) da origem.")
 
-        with get_target_connection() as dst_conn:
-            cursor = dst_conn.cursor()
-            cursor.fast_executemany = True
-            cursor.executemany(UPSERT_SQL, rows)
+        with get_target_connection().cursor() as dst_conn:
+            dst_conn.fast_executemany = True
+            dst_conn.executemany(UPSERT_SQL, rows)
             dst_conn.commit()
 
         logging.info("extract_csat: upsert concluído.")
