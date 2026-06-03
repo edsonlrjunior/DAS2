@@ -11,7 +11,7 @@ def extract_csat(myTimer: func.TimerRequest) -> None:
     try:
         logging.info("extract_csat: iniciando.")
 
-        SELECT_SQL = "SELECT Id, Column1, Column2 FROM itsm.csat"
+        SELECT_SQL = "SELECT * FROM itsm.csat"
 
         UPSERT_SQL = """
         INSERT INTO corptech.csat (Id, Column1, Column2)
