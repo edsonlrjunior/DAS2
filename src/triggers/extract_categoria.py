@@ -1,8 +1,6 @@
 import logging
 import azure.functions as func
-import os
-import pyodbc
-import database_connects
+from database_connects import get_source_connection, get_target_connection
 
 app = func.Blueprint()
 
@@ -47,12 +45,12 @@ def extract_categoria(myTimer: func.TimerRequest) -> None:
     """
  
     try:
-        with database_connects.get_source_connection() as src_conn:
+        with get_source_connection() as src_conn:
             rows = src_conn.cursor().execute(SELECT_SQL).fetchall()
  
         logging.info(f"extract_categoria: {len(rows)} linha(s) lida(s) da origem.")
  
-        with database_connects.get_target_connection() as dst_conn:
+        with get_target_connection() as dst_conn:
             cursor = dst_conn.cursor()
             cursor.fast_executemany = True
             cursor.executemany(UPSERT_SQL, rows)
