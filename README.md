@@ -18,3 +18,20 @@ IT Service Management
 # Justificativa Documento
 
 [Link Documento](docs/Justificativa_ITSM_Azure.docx)
+
+# Dashboard Power BI
+
+Para documentar o dashboard Power BI, seguem três prints:
+
+## Geral
+
+![Dashboard Power BI - Print 1](docs/dashboard-geral.png)
+
+## Abertos
+
+![Dashboard Power BI - Print 2](docs/dashboard-aberto.png)
+
+## Encerrados
+
+![Dashboard Power BI - Print 3](docs/dashboard-encerrado.png)
+
