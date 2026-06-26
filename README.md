@@ -33,5 +33,5 @@ Para documentar o dashboard Power BI, seguem três prints:
 
 ## Encerrados
 
-![Dashboard Power BI - Print 3](docs/dashboard-encerrado.png)
+![Dashboard Power BI - Print 3](docs/dashboard-encerrados.png)
 
